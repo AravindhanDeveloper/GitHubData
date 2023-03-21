@@ -1,6 +1,7 @@
 package com.git.github.Activity;
 
 import android.content.Intent;
+import java.lang.reflect.Type;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,12 +25,16 @@ import com.git.github.Model.DetailsModel;
 import com.git.github.R;
 import com.git.github.Repository.DetailsListRepository;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     DetailsListRepository detailsListRepository;
     RecyclerView recyclerview;
+    private ArrayList<DetailsModel> detailModalArrayList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +51,34 @@ public class MainActivity extends AppCompatActivity {
         getDetails();
     }
 
+    private void loadData() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("detail", null);
+        Type type = new TypeToken<ArrayList<DetailsModel>>() {}.getType();
+        detailModalArrayList = gson.fromJson(json, type);
+        DetailsListAdapter adapter = new DetailsListAdapter(MainActivity.this, detailModalArrayList);
+        recyclerview.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        if (detailModalArrayList == null) {
+            detailModalArrayList = new ArrayList<>();
+
+        }
+    }
+
+    private void saveData() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+
+        String json = gson.toJson(detailModalArrayList);
+
+        editor.putString("detail", json);
+
+        editor.apply();
+    }
     private void getDetails() {
 
         detailsListRepository.setGetCommonAPIDetails(new DetailsListRepository.GetCommonAPIDataSuccessCallBack() {
@@ -54,12 +87,14 @@ public class MainActivity extends AppCompatActivity {
                 if (apiResponse != null) {
 
                     List<DetailsModel> result = (List<DetailsModel>) apiResponse;
+                    detailModalArrayList= (ArrayList<DetailsModel>) result;
                     DetailsListAdapter adapter = new DetailsListAdapter(MainActivity.this, result);
                     recyclerview.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
+                    saveData();
                 } else {
                     Toast.makeText(MainActivity.this, "Network failed", Toast.LENGTH_SHORT).show();
-
+                    loadData();
                 }
 
             }
@@ -67,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void getCommonAPIDataFailure(String message) {
                 Toast.makeText(MainActivity.this, "Network failed", Toast.LENGTH_SHORT).show();
+                loadData();
 
             }
         });
