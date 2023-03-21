@@ -27,41 +27,6 @@ public class DetailsListRepository {
   public DetailsListRepository(Context context) {
     this.context = context;
   }
-  public void getResp(String token,RespModel n) {
-
-    Retrofit retrofit = RetrofitAPIBuilder.getInstance();
-    WebServiceAPI authAPIServices = retrofit.create(WebServiceAPI.class);
-    Call call = authAPIServices.getRepos(token,n);
-    call.enqueue(new Callback<BaseListResponse<RespModel>>() {
-      @Override
-      public void onResponse(Call<BaseListResponse<RespModel>> call, Response<BaseListResponse<RespModel>> response) {
-        BaseListResponse<RespModel> apiArrayResponse = response.body();
-        if (apiArrayResponse != null) {
-          getCommonAPIDataSuccessCallBack.getCommonAPIDataSuccess((List<DetailsModel>) apiArrayResponse);
-
-        } else {
-          String message = "";
-
-          try {
-            Gson gson = new Gson();
-
-            ErrorResponse errorResponse = gson.fromJson(
-                    response.errorBody().string(),
-                    ErrorResponse.class);
-            message = errorResponse.getMessage();
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-          getCommonAPIDataSuccessCallBack.getCommonAPIDataFailure(message);
-        }
-      }
-
-      @Override
-      public void onFailure(Call call, Throwable t) {
-        getCommonAPIDataSuccessCallBack.getCommonAPIDataFailure(Constants.API_FAILURE+" "+t.toString());
-      }
-    });
-  }
   public void getDeatils(){
     Retrofit retrofit = RetrofitAPIBuilder.getInstance();
     WebServiceAPI authAPIServices = retrofit.create(WebServiceAPI.class);

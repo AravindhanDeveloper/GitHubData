@@ -20,7 +20,7 @@ public interface WebServiceAPI {
     Call<List<DetailsModel>> getDetails();
     @Headers("Content-Type: application/json")
     @POST("repos")
-    Call<BaseListResponse<RespModel>> getRepos(@Query("access_token") String accessToken,@Body RespModel body);
+    Call<List<RespModel>> getRepos(@Query("access_token") String accessToken,@Body RespModel body);
 
 
 }
